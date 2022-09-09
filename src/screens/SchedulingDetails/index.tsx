@@ -70,7 +70,7 @@ export function SchedulingDetails() {
     const route = useRoute();
     const { car, dates } = route.params as Params;
   
-    const rentTotal = Number(dates.length * car.price);
+    const rentTotal = Number(dates.length * car.rent.price);
   
     async function handleConfirmRental() {
       try {
@@ -83,14 +83,18 @@ export function SchedulingDetails() {
           // mas a data selecionada na tela
           ...dates,
         ];
-
+        
         await api.post('/schedules_byuser', {
           user_id: '1',
           car,
           start_date: format(getPlatformDate(new Date(dates[0])), 'dd/MM/yyyy'),
           end_date: format(getPlatformDate(new Date(dates[dates.length - 1])), 'dd/MM/yyyy')
+        })
+        .catch(() => {
+          Alert.alert('Houve um erro ao salvar registro do usuário.');
+          setLoading(false);
         });
-
+        
         // Uma das formas de Enviar dados a API
         // api.put sobrescreve / api.post Add uma nova linha
         api.put(`/schedules_bycars/${car.id}`, {
@@ -105,20 +109,15 @@ export function SchedulingDetails() {
           })
         )
         .catch(() => {
-          Alert.alert('Houve um erro no agendamento.');
-          setLoading(false);;
-        })        
-/*
-        navigation.navigate('Confirmation', {
-          title: 'Carro alugado!',
-          message: `Agora você só precisa ir\naté a concessionária da RENTX\npegar o seu automóvel.`,
-          nextScreenRoute: 'Home',
+          Alert.alert('Houve um erro ao fazer agendamento do carro.');
+          setLoading(false);
         });
-        */
+ 
+
       } catch (error) {
         console.error(error);
         setLoading(false);
-        Alert.alert('Houve um erro no agendamento. Por favor tente novamente mais tarde');
+        Alert.alert('Houve um erro no agendamento. Por favor, tente novamente mais tarde.');
       }
     }
   
@@ -153,9 +152,9 @@ export function SchedulingDetails() {
         </Header>
 
         <CarImages>
-            <ImageSlider 
-                imagesUrl={car.thumbnail}
-            />
+            {/*<ImageSlider 
+              imagesUrl={car.thumbnail}
+  />*/}
         </CarImages> 
 
         <Content>
@@ -212,7 +211,7 @@ export function SchedulingDetails() {
           <RentalPrice>
             <RentalPriceLabel>Total</RentalPriceLabel>
             <RentalPriceDetails>
-                <RentalPriceQuota>{`R$ ${car.price} x${dates.length} diárias`}</RentalPriceQuota>
+                <RentalPriceQuota>{`R$ ${car.rent.price} x ${dates.length} diárias`}</RentalPriceQuota>
                 <RentalPriceTotal>R$ {rentTotal}</RentalPriceTotal>
             </RentalPriceDetails>
           </RentalPrice>

@@ -1,8 +1,9 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { StatusBar, StyleSheet } from 'react-native';
 import { useTheme } from 'styled-components';
 import { getStatusBarHeight } from 'react-native-iphone-x-helper';
 import { useNavigation, useRoute } from '@react-navigation/native';
+import { useNetInfo } from '@react-native-community/netinfo';
 
 import Animated, { 
     useSharedValue, 
@@ -19,6 +20,8 @@ import { Button } from '../../components/Button';
 
 import { getAccessoryIcon } from '../../utils/getAccessoryIcon';
 import { CarDTO } from '../../dtos/CarDTO';
+
+import { api } from '../../services/api';
 
 import { 
     Container,
@@ -42,11 +45,13 @@ interface Params {
 }
 
 export function CarDetails() {
+  const [carUpdated, setCarUpdated] = useState<CarDTO>({}as CarDTO);
+
+  const netInfo = useNetInfo();
+  const theme = useTheme();
   const navigation = useNavigation();
   const routes = useRoute();
   const { car } = routes.params as Params ;
-
-  const theme = useTheme();
 
   //fazer a animação para sumir a figura de carro, qdo ativar o scroll
   const scrollY = useSharedValue(0);
@@ -86,6 +91,17 @@ export function CarDetails() {
     navigation.goBack();
   }
 
+  useEffect(() => {
+    async function fetchCarUpdated() {
+      const response = await api.get(`/cars/${car.id}`);
+      setCarUpdated(response.data);
+    }
+
+    if(netInfo.isConnected === true) {
+      fetchCarUpdated();
+    }
+  }, [netInfo.isConnected]);
+
   return (
     <Container>
         <StatusBar 
@@ -110,9 +126,9 @@ export function CarDetails() {
                 style={sliderCarsStyleAnimation}
             >
                 <CarImages>
-                    <ImageSlider 
-                        imagesUrl={[car.photos]}
-                    />
+                {/*<ImageSlider
+                        /*imagesUrl={[car.photos]} 
+                    />*/} 
                 </CarImages>
             </Animated.View>
         </Animated.View>
@@ -133,8 +149,8 @@ export function CarDetails() {
                 </Description>
 
                 <Rent>
-                    <Period>{car.period}</Period>
-                    <Price>R$ {car.price}</Price>
+                    <Period>{car.rent.period}</Period>
+                    <Price>R$ {car.rent.price}</Price>
                 </Rent>
             </Details>
 
