@@ -33,6 +33,7 @@ export function AppStackRoutes() {
       <Screen
         name="Home"
         component={Home}
+        options={{gestureEnabled: false}} /*Qdo IOS, evitar retornar a janela de Splash*/
       />
 
       <Screen
